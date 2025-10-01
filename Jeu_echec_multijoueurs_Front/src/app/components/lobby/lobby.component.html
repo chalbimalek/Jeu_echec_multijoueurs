@@ -1,0 +1,195 @@
+<div class="lobby-container">
+  <header class="lobby-header">
+    <div class="header-content">
+      <div class="logo">
+        <span class="chess-icon">♔</span>
+        <h1>Chess Arena</h1>
+      </div>
+      <div class="user-info">
+        <div class="user-badge">
+          <span class="user-avatar">{{ currentUsername.charAt(0).toUpperCase() }}</span>
+          <span class="user-name">{{ currentUsername }}</span>
+        </div>
+        <button (click)="logout()" class="btn-logout">
+          <span>Déconnexion</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="tabs-container">
+    <div class="tabs">
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'lobby'"
+        (click)="activeTab = 'lobby'">
+        <span class="tab-icon">👥</span>
+        Lobby
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'history'"
+        (click)="activeTab = 'history'; loadGameHistory()">
+        <span class="tab-icon">📜</span>
+        Historique
+      </button>
+    </div>
+  </div>
+
+  <!-- TAB LOBBY -->
+  <div class="lobby-content" *ngIf="activeTab === 'lobby'">
+    <div class="active-game-section" *ngIf="activeGame">
+      <div class="card card-active-game">
+        <div class="card-header">
+          <h3>⚔️ Partie en cours</h3>
+        </div>
+        <div class="card-body">
+          <div class="game-preview">
+            <div class="player-vs">
+              <div class="player">
+                <span class="player-icon white">♔</span>
+                <span>{{ activeGame.whitePlayer }}</span>
+              </div>
+              <span class="vs">VS</span>
+              <div class="player">
+                <span class="player-icon black">♚</span>
+                <span>{{ activeGame.blackPlayer }}</span>
+              </div>
+            </div>
+            <button (click)="joinGame()" class="btn-primary btn-large">
+              Rejoindre la partie
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-layout">
+      <div class="invitations-section" *ngIf="pendingInvitations.length > 0">
+        <div class="card">
+          <div class="card-header">
+            <h2>📬 Invitations reçues</h2>
+            <span class="badge">{{ pendingInvitations.length }}</span>
+          </div>
+          <div class="card-body">
+            <div class="invitation-list">
+              <div *ngFor="let invitation of pendingInvitations" class="invitation-item">
+                <div class="invitation-info">
+                  <div class="avatar">{{ invitation.fromUsername.charAt(0).toUpperCase() }}</div>
+                  <div class="invitation-details">
+                    <strong>{{ invitation.fromUsername }}</strong>
+                    <span class="invitation-text">vous invite à jouer</span>
+                  </div>
+                </div>
+                <div class="invitation-actions">
+                  <button (click)="acceptInvitation(invitation)" [disabled]="loading" class="btn-accept">
+                    ✓ Accepter
+                  </button>
+                  <button (click)="rejectInvitation(invitation)" [disabled]="loading" class="btn-reject">
+                    ✕ Refuser
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="users-section">
+        <div class="card">
+          <div class="card-header">
+            <h2>🌐 Joueurs en ligne</h2>
+            <span class="badge badge-success">{{ onlineUsers.length }}</span>
+          </div>
+          <div class="card-body">
+            <div class="users-grid">
+              <div *ngFor="let user of onlineUsers" class="user-card">
+                <div class="user-card-content">
+                  <div class="user-avatar-large">{{ user.username.charAt(0).toUpperCase() }}</div>
+                  <div class="user-details">
+                    <span class="user-username">{{ user.username }}</span>
+                    <span class="status-indicator">
+                      <span class="online-dot"></span>
+                      En ligne
+                    </span>
+                  </div>
+                </div>
+                <button
+                  *ngIf="!sentInvitations.has(user.username) && !activeGame"
+                  (click)="sendInvitation(user.username)"
+                  class="btn-invite"
+                >
+                  Défier
+                </button>
+                <span *ngIf="sentInvitations.has(user.username)" class="invitation-sent">
+                  ⏳ En attente
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB HISTORIQUE -->
+  <div class="history-content" *ngIf="activeTab === 'history'">
+    <div class="card">
+      <div class="card-header">
+        <h2>📊 Historique des parties</h2>
+        <span class="badge">{{ gameHistory.length }}</span>
+      </div>
+      <div class="card-body">
+        <div *ngIf="loadingHistory" class="loading-spinner">
+          Chargement...
+        </div>
+
+        <div *ngIf="!loadingHistory && gameHistory.length === 0" class="empty-state">
+          <span class="empty-icon">🎮</span>
+          <p>Aucune partie jouée pour le moment</p>
+          <button (click)="activeTab = 'lobby'" class="btn-primary">
+            Commencer à jouer
+          </button>
+        </div>
+
+        <div *ngIf="!loadingHistory && gameHistory.length > 0" class="games-list">
+          <div *ngFor="let game of gameHistory" class="game-card" >
+            <div class="game-card-header">
+              <span class="game-id">#{{ game.id }}</span>
+              <span class="game-status" [class.finished]="game.status === 'FINISHED'"
+                    [class.active]="game.status === 'ACTIVE'">
+                {{ game.status === 'FINISHED' ? '✓ Terminée' : '⏳ En cours' }}
+              </span>
+            </div>
+
+            <div class="game-card-body">
+              <div class="players-match">
+                <div class="match-player">
+                  <span class="player-piece white">♔</span>
+                  <span [class.winner]="game.winner === game.whitePlayer">
+                    {{ game.whitePlayer }}
+                  </span>
+                  <span *ngIf="game.winner === game.whitePlayer" class="crown">👑</span>
+                </div>
+                <span class="vs-text">vs</span>
+                <div class="match-player">
+                  <span class="player-piece black">♚</span>
+                  <span [class.winner]="game.winner === game.blackPlayer">
+                    {{ game.blackPlayer }}
+                  </span>
+                  <span *ngIf="game.winner === game.blackPlayer" class="crown">👑</span>
+                </div>
+              </div>
+
+              <div class="game-result" *ngIf="game.status === 'FINISHED'">
+                <span class="result-label">Vainqueur:</span>
+                <span class="result-winner">{{ game.winner }}</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

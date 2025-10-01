@@ -1,0 +1,67 @@
+<div class="game-container">
+  <div class="game-header">
+    <h2>Partie d'Échecs</h2>
+    <button (click)="returnToLobby()" class="btn-back">Retour au Lobby</button>
+  </div>
+
+  <div class="game-content">
+    <div class="game-info">
+      <div class="player-info">
+        <h3>Vous jouez: {{ playerColor === 'WHITE' ? 'Blancs' : 'Noirs' }}</h3>
+        <p>Adversaire: {{ getOpponentName() }}</p>
+      </div>
+
+<div class="turn-indicator" [class.your-turn]="currentTurn === playerColor">
+  <span *ngIf="!isGameOver">
+    Tour: {{ currentTurn === 'WHITE' ? 'Blancs' : 'Noirs' }}
+    <span *ngIf="currentTurn === playerColor">(Votre tour)</span>
+  </span>
+  <span *ngIf="isGameOver" class="game-over">
+    Partie terminée - Vainqueur: {{ winner }}
+    <span *ngIf="winner === currentUsername" style="color: green;"> (Vous avez gagné !)</span>
+    <span *ngIf="winner !== currentUsername" style="color: red;"> (Vous avez perdu)</span>
+  </span>
+</div>
+
+      <div class="game-actions">
+        <button *ngIf="!isGameOver" (click)="resign()" class="btn-resign">
+          Abandonner
+        </button>
+      </div>
+    </div>
+
+    <div class="board-container">
+      <div class="chessboard">
+        <div *ngFor="let rank of ranks" class="board-row">
+          <div *ngFor="let file of files"
+               class="square"
+               [class.light]="isLightSquare(file, rank)"
+               [class.dark]="!isLightSquare(file, rank)"
+               [class.selected]="isSquareSelected(file, rank)"
+               (click)="onSquareClick(file, rank)">
+            <span *ngIf="getPiece(file, rank)" class="piece">
+              {{ getPieceSymbol(getPiece(file, rank)!) }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="coordinates">
+        <div class="files">
+          <span *ngFor="let file of files">{{ file }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="move-history">
+      <h3>Historique des coups</h3>
+      <div class="moves-list">
+        <div *ngFor="let move of moveHistory; let i = index" class="move-item">
+          <span class="move-number">{{ i + 1 }}.</span>
+          <span>{{ move.piece }} {{ move.from }} → {{ move.to }}</span>
+          <span *ngIf="move.capturedPiece" class="capture">x{{ move.capturedPiece }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
