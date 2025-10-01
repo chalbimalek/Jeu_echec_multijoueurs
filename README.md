@@ -57,8 +57,7 @@ Build/Run : Maven, Node.js
  Installation & Lancement
 Backend (Spring Boot)
 # Cloner le repo
-git clone https://github.com/votre-repo/chess-multiplayer.git
-cd chess-multiplayer/backend
+git clone https://github.com/chalbimalek/Jeu_echec_multijoueurs.git
 
 # Configurer la base (application.properties)
 spring.datasource.url=jdbc:mysql://localhost:5432/chessdb
